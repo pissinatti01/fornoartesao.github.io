@@ -477,7 +477,7 @@ function checkoutViaWhatsApp() {
     return;
   }
 
-  const phone = '5584991082749'; // Número Oficial da Logo
+  const phone = '558491436368'; // Número Oficial da Logo
   const modality = cart.deliveryType === 'pickup' ? 'Retirada no Balcão' : 'Entrega Delivery';
   const notes = document.getElementById('cart-order-notes')?.value.trim();
 
