@@ -107,7 +107,7 @@ const PRODUCTS = [
 class CartState {
   constructor() {
     this.items = this.load();
-    this.deliveryType = 'pickup'; // 'pickup' ou 'delivery'
+    this.deliveryType = 'delivery'; // 'pickup' ou 'delivery'
     this.deliveryFee = 7.00;
     this.freeDeliveryThreshold = 65.00;
     this.orderNotes = '';
@@ -201,6 +201,10 @@ class CartState {
   }
 
   setDeliveryType(type) {
+    if (type === 'pickup') {
+      const pickupEl = document.getElementById('opt-pickup');
+      if (pickupEl && pickupEl.classList.contains('disabled')) return;
+    }
     this.deliveryType = type;
     this.notify();
   }
@@ -583,6 +587,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const deliveryBtn = document.getElementById('opt-delivery');
   if (pickupBtn && deliveryBtn) {
     pickupBtn.addEventListener('click', () => {
+      if (pickupBtn.classList.contains('disabled')) return;
       pickupBtn.classList.add('active');
       deliveryBtn.classList.remove('active');
       cart.setDeliveryType('pickup');
