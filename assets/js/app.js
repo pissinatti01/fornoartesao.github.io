@@ -10,7 +10,7 @@ const PRODUCTS = [
     name: 'Bolo Artesanal com Calda de Chocolate Nobre',
     category: 'bolos',
     price: 48.00,
-    weight: 'Bolo Inteiro (~1.3kg)',
+    weight: 'Bolo Inteiro',
     image: 'assets/images/bolo-chocolate-artesanal.jpg',
     badge: 'Novo no Forno',
     isGoldBadge: true,
@@ -58,7 +58,7 @@ const PRODUCTS = [
     name: 'Bolo Artesanal de Maçã e Canela',
     category: 'bolos',
     price: 46.00,
-    weight: 'Bolo Inteiro (~1.2kg)',
+    weight: 'Bolo Inteiro',
     image: 'assets/images/bolo-maca-canela.jpg',
     badge: 'Destaque da Casa',
     isGoldBadge: true,
@@ -116,7 +116,11 @@ class CartState {
   load() {
     try {
       const saved = localStorage.getItem('forno_artesao_cart');
-      return saved ? JSON.parse(saved) : [];
+      const list = saved ? JSON.parse(saved) : [];
+      return list.map(item => {
+        const prod = PRODUCTS.find(p => p.id === item.id);
+        return prod ? { ...item, weight: prod.weight, price: prod.price, name: prod.name } : item;
+      });
     } catch (e) {
       console.warn('Erro ao carregar carrinho:', e);
       return [];
@@ -267,7 +271,7 @@ function renderProducts(filter = 'todos', search = '') {
       <div class="product-content">
         <div class="product-meta">
           <span class="product-category">${getCategoryName(product.category)}</span>
-          <span class="product-weight">${product.weight}</span>
+          ${product.weight ? `<span class="product-weight">${product.weight}</span>` : ''}
         </div>
         <h3 class="product-title" onclick="openQuickView('${product.id}')" style="cursor: pointer;">${product.name}</h3>
         <p class="product-desc">${product.description}</p>
@@ -363,7 +367,7 @@ function renderCart() {
         <img class="cart-item-img" src="${item.image}" alt="${item.name}" />
         <div class="cart-item-info">
           <div class="cart-item-name">${item.name}</div>
-          <div class="cart-item-variant">${item.weight}</div>
+          ${item.weight ? `<div class="cart-item-variant">${item.weight}</div>` : ''}
           <div class="cart-item-price-unit">${formatCurrency(item.price)} cada</div>
           <div class="cart-item-controls">
             <div class="qty-stepper">
@@ -485,7 +489,7 @@ function checkoutViaWhatsApp() {
   msg += `Gostaria de fazer o pedido dos seguintes produtos:\n\n`;
 
   cart.items.forEach(item => {
-    msg += `*${item.quantity}x* ${item.name} (${item.weight})\n`;
+    msg += `*${item.quantity}x* ${item.name}${item.weight ? ` (${item.weight})` : ''}\n`;
   });
 
   msg += `\nOpção: ${modality}\n`;
@@ -516,7 +520,7 @@ function openQuickView(productId) {
         <img src="${product.image}" alt="${product.name}" />
       </div>
       <div class="modal-info">
-        <span class="modal-category">${getCategoryName(product.category)} • ${product.weight}</span>
+        <span class="modal-category">${getCategoryName(product.category)}${product.weight ? ` • ${product.weight}` : ''}</span>
         <h2 class="modal-title">${product.name}</h2>
         <div class="modal-price">${formatCurrency(product.price)}</div>
         <p class="modal-desc">${product.description}</p>
