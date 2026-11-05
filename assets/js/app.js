@@ -226,6 +226,16 @@ window.closeCartDrawer = closeCartDrawer;
 window.checkoutViaWhatsApp = checkoutViaWhatsApp;
 window.openQuickView = openQuickView;
 window.closeQuickView = closeQuickView;
+window.openCheckoutModal = openCheckoutModal;
+window.closeCheckoutModal = closeCheckoutModal;
+window.checkoutNextStep = checkoutNextStep;
+window.checkoutPrevStep = checkoutPrevStep;
+window.setCheckoutDelivery = setCheckoutDelivery;
+window.selectPaymentMethod = selectPaymentMethod;
+window.updateCheckoutQuantity = updateCheckoutQuantity;
+window.handleCepInput = handleCepInput;
+window.searchCepManual = searchCepManual;
+window.sendOrderToWhatsApp = sendOrderToWhatsApp;
 
 // 3. Formatação Monetária (R$)
 function formatCurrency(value) {
@@ -478,34 +488,478 @@ function showToast(message) {
   }, 3200);
 }
 
-// 9. Checkout WhatsApp (Mensagem Limpa e Sem Emojis)
-function checkoutViaWhatsApp() {
+// 9. Checkout Multi-Etapas (Confirmação -> Endereço -> Pagamento -> WhatsApp)
+let currentCheckoutStep = 1;
+let currentPaymentMethod = 'pix';
+
+function openCheckoutModal() {
   if (cart.items.length === 0) {
-    alert('Seu carrinho está vazio! Adicione produtos antes de finalizar.');
+    showToast('Seu carrinho está vazio! Adicione produtos antes de prosseguir.');
+    return;
+  }
+  closeCartDrawer();
+  currentCheckoutStep = 1;
+
+  // Sincroniza observações do drawer para o modal se houver
+  const drawerNotes = document.getElementById('cart-order-notes')?.value;
+  const modalNotes = document.getElementById('checkout-notes');
+  if (drawerNotes && modalNotes && !modalNotes.value) {
+    modalNotes.value = drawerNotes;
+  }
+
+  // Sincroniza modalidade de entrega
+  setCheckoutDelivery(cart.deliveryType || 'delivery');
+
+  renderCheckoutStep1();
+  updateCheckoutStepUI();
+
+  const modal = document.getElementById('checkout-modal');
+  if (modal) {
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+}
+
+function closeCheckoutModal() {
+  const modal = document.getElementById('checkout-modal');
+  if (modal) {
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+}
+
+function updateCheckoutStepUI() {
+  const track = document.getElementById('checkout-slider-track');
+  const badge = document.getElementById('checkout-step-badge');
+  const title = document.getElementById('checkout-step-title');
+  const fill = document.getElementById('checkout-progress-fill');
+  const prevBtn = document.getElementById('btn-checkout-prev');
+  const nextBtn = document.getElementById('btn-checkout-next');
+  const nextText = document.getElementById('checkout-next-text');
+  const nextArrow = document.getElementById('checkout-next-arrow');
+  const dots = document.querySelectorAll('.checkout-dot');
+
+  // Atualiza bolinhas dentro do botão
+  dots.forEach(dot => {
+    const s = parseInt(dot.getAttribute('data-step'), 10);
+    if (s === currentCheckoutStep) {
+      dot.classList.add('active');
+    } else {
+      dot.classList.remove('active');
+    }
+  });
+
+  // Transição lateral suave do slider
+  if (track) {
+    const offset = -(currentCheckoutStep - 1) * 33.333333;
+    track.style.transform = `translateX(${offset}%)`;
+  }
+
+  // Títulos e barra de progresso
+  if (badge && title && fill) {
+    if (currentCheckoutStep === 1) {
+      badge.textContent = 'Etapa 1 de 3';
+      title.textContent = 'Confirmação do Pedido';
+      fill.style.width = '33.333%';
+    } else if (currentCheckoutStep === 2) {
+      badge.textContent = 'Etapa 2 de 3';
+      title.textContent = 'Endereço e Contato';
+      fill.style.width = '66.666%';
+    } else if (currentCheckoutStep === 3) {
+      badge.textContent = 'Etapa 3 de 3';
+      title.textContent = 'Forma de Pagamento';
+      fill.style.width = '100%';
+    }
+  }
+
+  // Botão Voltar (aparece a partir da etapa 2)
+  if (prevBtn) {
+    prevBtn.style.display = currentCheckoutStep === 1 ? 'none' : 'flex';
+  }
+
+  // Botão Avançar / Enviar
+  if (nextBtn && nextText) {
+    if (currentCheckoutStep === 3) {
+      nextText.textContent = 'Enviar no WhatsApp';
+      nextBtn.classList.add('whatsapp-ready');
+      if (nextArrow) {
+        nextArrow.innerHTML = `
+          <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.007c.106.005.249-.04.39.299.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.963 1.201.662.591 1.221.774 1.394.86.174.086.275.072.376-.044.101-.116.433-.506.549-.68.116-.173.231-.144.39-.086s1.011.477 1.184.564.289.13.332.202c.043.073.043.419-.101.824z" fill="currentColor"/>
+        `;
+      }
+    } else {
+      nextText.textContent = 'Prosseguir';
+      nextBtn.classList.remove('whatsapp-ready');
+      if (nextArrow) {
+        nextArrow.innerHTML = `<polyline points="9 18 15 12 9 6"></polyline>`;
+      }
+    }
+  }
+
+  // Ajustes condicionais de endereço na etapa 2
+  const isPickup = cart.deliveryType === 'pickup';
+  const pickupNotice = document.getElementById('checkout-pickup-notice');
+  const addrTitle = document.getElementById('checkout-address-title');
+  const streetReq = document.getElementById('street-required');
+  const numReq = document.getElementById('number-required');
+  const neighReq = document.getElementById('neighborhood-required');
+
+  if (pickupNotice) pickupNotice.style.display = isPickup ? 'block' : 'none';
+  if (addrTitle) addrTitle.textContent = isPickup ? 'Endereço (Opcional para Retirada no Balcão)' : 'Endereço de Entrega';
+  if (streetReq) streetReq.style.display = isPickup ? 'none' : 'inline';
+  if (numReq) numReq.style.display = isPickup ? 'none' : 'inline';
+  if (neighReq) neighReq.style.display = isPickup ? 'none' : 'inline';
+
+  // Na etapa 3, gera o resumo
+  if (currentCheckoutStep === 3) {
+    renderCheckoutSummary();
+  }
+}
+
+function checkoutPrevStep() {
+  if (currentCheckoutStep > 1) {
+    currentCheckoutStep--;
+    updateCheckoutStepUI();
+  }
+}
+
+function checkoutNextStep() {
+  if (currentCheckoutStep === 1) {
+    if (cart.items.length === 0) {
+      showToast('Seu carrinho está vazio!');
+      return;
+    }
+    const notes = document.getElementById('checkout-notes')?.value;
+    if (notes !== undefined) cart.setOrderNotes(notes);
+
+    currentCheckoutStep = 2;
+    updateCheckoutStepUI();
+  } else if (currentCheckoutStep === 2) {
+    const nameInput = document.getElementById('client-name');
+    const phoneInput = document.getElementById('client-phone');
+    const name = nameInput?.value.trim();
+    const phone = phoneInput?.value.trim();
+
+    if (!name) {
+      showToast('Por favor, informe seu nome completo.');
+      nameInput?.classList.add('input-error');
+      nameInput?.focus();
+      return;
+    } else {
+      nameInput?.classList.remove('input-error');
+    }
+
+    if (!phone || phone.length < 8) {
+      showToast('Por favor, informe seu telefone/WhatsApp de contato.');
+      phoneInput?.classList.add('input-error');
+      phoneInput?.focus();
+      return;
+    } else {
+      phoneInput?.classList.remove('input-error');
+    }
+
+    // Se for delivery, valida rua, número e bairro
+    if (cart.deliveryType === 'delivery') {
+      const streetInput = document.getElementById('client-street');
+      const numberInput = document.getElementById('client-number');
+      const neighInput = document.getElementById('client-neighborhood');
+
+      const street = streetInput?.value.trim();
+      const number = numberInput?.value.trim();
+      const neigh = neighInput?.value.trim();
+
+      if (!street) {
+        showToast('Para entrega, informe o nome da Rua ou Avenida.');
+        streetInput?.classList.add('input-error');
+        streetInput?.focus();
+        return;
+      } else {
+        streetInput?.classList.remove('input-error');
+      }
+
+      if (!number) {
+        showToast('Para entrega, informe o Número (ou S/N).');
+        numberInput?.classList.add('input-error');
+        numberInput?.focus();
+        return;
+      } else {
+        numberInput?.classList.remove('input-error');
+      }
+
+      if (!neigh) {
+        showToast('Para entrega, informe o Bairro ou Logradouro.');
+        neighInput?.classList.add('input-error');
+        neighInput?.focus();
+        return;
+      } else {
+        neighInput?.classList.remove('input-error');
+      }
+    }
+
+    currentCheckoutStep = 3;
+    updateCheckoutStepUI();
+  } else if (currentCheckoutStep === 3) {
+    sendOrderToWhatsApp();
+  }
+}
+
+// Renderiza lista Shein de itens da etapa 1
+function renderCheckoutStep1() {
+  const container = document.getElementById('checkout-shein-items');
+  if (!container) return;
+
+  if (cart.items.length === 0) {
+    container.innerHTML = '<p style="text-align:center; padding: 1rem; color: var(--brand-text-light);">Nenhum produto no carrinho.</p>';
     return;
   }
 
-  const phone = '558491436368'; // Número Oficial da Logo
-  const modality = cart.deliveryType === 'pickup' ? 'Retirada no Balcão' : 'Entrega Delivery';
-  const notes = document.getElementById('cart-order-notes')?.value.trim();
+  container.innerHTML = cart.items.map(item => `
+    <div class="checkout-shein-item" data-id="${item.id}">
+      <img class="checkout-shein-img" src="${item.image}" alt="${item.name}" />
+      <div class="checkout-shein-info">
+        <div class="checkout-shein-name" title="${item.name}">${item.name}</div>
+        <div class="checkout-shein-variant">${item.weight}</div>
+        <span class="checkout-shein-qty-badge">Qtd: ${item.quantity}</span>
+      </div>
+      <div class="checkout-shein-actions">
+        <div class="checkout-shein-stepper">
+          <button type="button" class="checkout-shein-btn" onclick="updateCheckoutQuantity('${item.id}', -1)" title="Diminuir">-</button>
+          <span class="checkout-shein-qty">${item.quantity}</span>
+          <button type="button" class="checkout-shein-btn" onclick="updateCheckoutQuantity('${item.id}', 1)" title="Aumentar">+</button>
+        </div>
+        <button type="button" class="checkout-shein-remove" onclick="updateCheckoutQuantity('${item.id}', -${item.quantity})" title="Remover item">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function updateCheckoutQuantity(productId, delta) {
+  cart.updateQuantity(productId, delta);
+  if (cart.items.length === 0) {
+    closeCheckoutModal();
+    showToast('O carrinho está vazio.');
+    return;
+  }
+  renderCheckoutStep1();
+  if (currentCheckoutStep === 3) {
+    renderCheckoutSummary();
+  }
+}
+
+function setCheckoutDelivery(type) {
+  if (type === 'pickup') {
+    const p1 = document.getElementById('opt-pickup');
+    const p2 = document.getElementById('checkout-opt-pickup');
+    if ((p1 && p1.classList.contains('disabled')) || (p2 && p2.classList.contains('disabled'))) {
+      showToast('A retirada na loja estará disponível em breve!');
+      return;
+    }
+  }
+  cart.setDeliveryType(type);
+  const current = cart.deliveryType;
+  const pickupEl = document.getElementById('checkout-opt-pickup');
+  const deliveryEl = document.getElementById('checkout-opt-delivery');
+  if (pickupEl && deliveryEl) {
+    if (current === 'pickup') {
+      pickupEl.classList.add('active');
+      deliveryEl.classList.remove('active');
+    } else {
+      deliveryEl.classList.add('active');
+      pickupEl.classList.remove('active');
+    }
+  }
+  updateCheckoutStepUI();
+}
+
+function selectPaymentMethod(method) {
+  currentPaymentMethod = method;
+  const cards = document.querySelectorAll('.payment-option-card');
+  cards.forEach(card => card.classList.remove('active'));
+
+  let cardId = 'pay-card-pix';
+  if (method === 'cartao_debito') cardId = 'pay-card-debito';
+  else if (method === 'cartao_credito') cardId = 'pay-card-credito';
+  else if (method === 'dinheiro') cardId = 'pay-card-dinheiro';
+
+  const cardSelected = document.getElementById(cardId);
+  if (cardSelected) {
+    cardSelected.classList.add('active');
+    const radio = cardSelected.querySelector('input[type="radio"]');
+    if (radio) radio.checked = true;
+  }
+
+  const changeGroup = document.getElementById('checkout-change-group');
+  if (changeGroup) {
+    changeGroup.style.display = method === 'dinheiro' ? 'block' : 'none';
+  }
+
+  renderCheckoutSummary();
+}
+
+// Busca automática e formatação de CEP (ViaCEP)
+function handleCepInput(val) {
+  let clean = val.replace(/\D/g, '');
+  if (clean.length > 5) {
+    clean = clean.substring(0, 5) + '-' + clean.substring(5, 8);
+  }
+  const cepInput = document.getElementById('client-cep');
+  if (cepInput) cepInput.value = clean;
+
+  const raw = clean.replace(/\D/g, '');
+  if (raw.length === 8) {
+    searchCep(raw);
+  }
+}
+
+function searchCepManual() {
+  const cep = document.getElementById('client-cep')?.value.replace(/\D/g, '');
+  if (cep && cep.length === 8) {
+    searchCep(cep);
+  } else {
+    showToast('Digite os 8 dígitos do CEP.');
+  }
+}
+
+async function searchCep(cep) {
+  const statusEl = document.getElementById('cep-status-text');
+  if (statusEl) statusEl.textContent = 'Buscando CEP...';
+  try {
+    const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+    const data = await res.json();
+    if (!data.erro) {
+      if (document.getElementById('client-street')) document.getElementById('client-street').value = data.logradouro || '';
+      if (document.getElementById('client-neighborhood')) document.getElementById('client-neighborhood').value = data.bairro || '';
+      if (statusEl) statusEl.textContent = `${data.localidade || ''} - ${data.uf || ''}`;
+      document.getElementById('client-number')?.focus();
+    } else {
+      if (statusEl) statusEl.textContent = 'CEP não localizado.';
+    }
+  } catch (e) {
+    if (statusEl) statusEl.textContent = '';
+  }
+}
+
+// Renderiza resumo da etapa 3 (SEM PREÇOS)
+function renderCheckoutSummary() {
+  const container = document.getElementById('checkout-final-summary');
+  if (!container) return;
+
+  const name = document.getElementById('client-name')?.value.trim() || 'A informar';
+  const phone = document.getElementById('client-phone')?.value.trim() || 'A informar';
+  const totalItems = cart.items.reduce((acc, item) => acc + item.quantity, 0);
+
+  let deliveryText = 'Retirada no Balcão da Padaria';
+  if (cart.deliveryType === 'delivery') {
+    const street = document.getElementById('client-street')?.value.trim();
+    const num = document.getElementById('client-number')?.value.trim();
+    const neigh = document.getElementById('client-neighborhood')?.value.trim();
+    if (street && num) {
+      deliveryText = `Entrega em: ${street}, Nº ${num}${neigh ? ' - ' + neigh : ''}`;
+    } else {
+      deliveryText = 'Entrega Delivery';
+    }
+  }
+
+  const paymentTitles = {
+    'pix': 'PIX',
+    'cartao_credito': 'Cartão de Crédito',
+    'cartao_debito': 'Cartão de Débito',
+    'dinheiro': 'Dinheiro em Espécie'
+  };
+
+  container.innerHTML = `
+    <div class="checkout-summary-line">
+      <span>👤 <strong>Cliente:</strong> ${name} • ${phone}</span>
+    </div>
+    <div class="checkout-summary-line">
+      <span>📍 <strong>Envio:</strong> ${deliveryText}</span>
+    </div>
+    <div class="checkout-summary-line">
+      <span>💳 <strong>Pagamento:</strong> ${paymentTitles[currentPaymentMethod] || 'A combinar'}</span>
+    </div>
+    <div class="checkout-summary-line">
+      <span>📦 <strong>Pacote:</strong> ${totalItems} ${totalItems === 1 ? 'item selecionado' : 'itens selecionados'}</span>
+    </div>
+  `;
+}
+
+// Envio final para o WhatsApp (SEM PREÇOS - APENAS PRODUTOS SELECIONADOS E DADOS)
+function sendOrderToWhatsApp() {
+  if (cart.items.length === 0) {
+    showToast('Seu carrinho está vazio!');
+    return;
+  }
+
+  const phoneBakery = '558491436368'; // WhatsApp Oficial de Pedidos
+  const clientName = document.getElementById('client-name')?.value.trim() || 'Não informado';
+  const clientPhone = document.getElementById('client-phone')?.value.trim() || 'Não informado';
+  const notes = document.getElementById('checkout-notes')?.value.trim();
 
   let msg = `Olá, Forno Artesão! Tudo bem?\n\n`;
   msg += `Gostaria de fazer o pedido dos seguintes produtos:\n\n`;
-
+  
+  msg += `📋 *PRODUTOS SELECIONADOS:*\n`;
   cart.items.forEach(item => {
-    msg += `*${item.quantity}x* ${item.name}${item.weight ? ` (${item.weight})` : ''}\n`;
+    msg += `• *${item.quantity}x* ${item.name}${item.weight ? ` (${item.weight})` : ''}\n`;
   });
 
-  msg += `\nOpção: ${modality}\n`;
+  msg += `\n👤 *DADOS DO CLIENTE:*\n`;
+  msg += `• *Nome:* ${clientName}\n`;
+  msg += `• *Telefone/WhatsApp:* ${clientPhone}\n`;
 
-  if (notes && notes !== '' && notes !== 'Nenhuma observação informada.') {
-    msg += `Observação: ${notes}\n`;
+  msg += `\n📍 *MODALIDADE DE ENTREGA:*\n`;
+  if (cart.deliveryType === 'pickup') {
+    msg += `• *Tipo:* Retirada no Balcão da Padaria\n`;
+  } else {
+    const cep = document.getElementById('client-cep')?.value.trim();
+    const street = document.getElementById('client-street')?.value.trim();
+    const number = document.getElementById('client-number')?.value.trim();
+    const neighborhood = document.getElementById('client-neighborhood')?.value.trim();
+    const complement = document.getElementById('client-complement')?.value.trim();
+
+    msg += `• *Tipo:* Entrega Delivery\n`;
+    if (cep) msg += `• *CEP:* ${cep}\n`;
+    msg += `• *Endereço:* ${street}, Nº ${number}\n`;
+    msg += `• *Logradouro/Bairro:* ${neighborhood}\n`;
+    if (complement) msg += `• *Complemento:* ${complement}\n`;
+  }
+
+  msg += `\n💳 *FORMA DE PAGAMENTO:*\n`;
+  const paymentNames = {
+    'pix': 'PIX',
+    'cartao_credito': 'Cartão de Crédito',
+    'cartao_debito': 'Cartão de Débito',
+    'dinheiro': 'Dinheiro'
+  };
+  let payStr = paymentNames[currentPaymentMethod] || 'A combinar';
+  if (currentPaymentMethod === 'dinheiro') {
+    const change = document.getElementById('client-change')?.value.trim();
+    if (change) {
+      payStr += ` (Troco para: ${change})`;
+    }
+  }
+  msg += `• *Opção:* ${payStr}\n`;
+
+  if (notes && notes !== '') {
+    msg += `\n📝 *OBSERVAÇÕES:*\n• ${notes}\n`;
   }
 
   msg += `\nVocês conseguem preparar para mim? Muito obrigado(a)!`;
 
-  const url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+  const url = `https://wa.me/${phoneBakery}?text=${encodeURIComponent(msg)}`;
   window.open(url, '_blank');
+
+  closeCheckoutModal();
+  showToast('Pedido preparado e enviado ao WhatsApp!');
+}
+
+function checkoutViaWhatsApp() {
+  openCheckoutModal();
 }
 
 // 10. Modal Quick View
@@ -579,6 +1033,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.key === 'Escape') {
       closeCartDrawer();
       closeQuickView();
+      closeCheckoutModal();
     }
   });
 
@@ -687,4 +1142,20 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  const checkoutModal = document.getElementById('checkout-modal');
+  if (checkoutModal) {
+    checkoutModal.addEventListener('click', (e) => {
+      if (e.target === checkoutModal) {
+        closeCheckoutModal();
+      }
+    });
+  }
+
+  // Limpa classe de erro ao digitar nos campos do checkout
+  document.querySelectorAll('.checkout-input').forEach(input => {
+    input.addEventListener('input', () => {
+      input.classList.remove('input-error');
+    });
+  });
 });
