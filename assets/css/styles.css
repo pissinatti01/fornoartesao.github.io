@@ -1386,6 +1386,61 @@ button {
 
 }
 
+/* Observação Individual do Produto no Carrinho Lateral */
+.cart-item-note-row {
+  grid-column: 1 / -1;
+  width: 100%;
+  margin-top: 0.25rem;
+}
+
+.cart-drawer-item-note {
+  width: 100%;
+  font-size: 0.78rem;
+  padding: 0.42rem 0.65rem;
+  border-radius: 6px;
+  border: 1px dashed rgba(184, 131, 73, 0.4);
+  background: #ffffff;
+  color: var(--brand-roast);
+  font-family: inherit;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.cart-drawer-item-note:focus {
+  outline: none;
+  border-color: var(--brand-gold);
+  border-style: solid;
+  box-shadow: 0 0 0 2px rgba(184, 131, 73, 0.15);
+}
+
+/* Botões de Acesso Rápido para as Etapas do Checkout */
+.drawer-step-shortcuts {
+  display: flex;
+  gap: 0.35rem;
+  width: 100%;
+  margin-top: -0.35rem;
+}
+
+.drawer-shortcut-btn {
+  flex: 1;
+  background: rgba(184, 131, 73, 0.08);
+  border: 1px solid rgba(184, 131, 73, 0.25);
+  color: var(--brand-roast);
+  font-size: 0.73rem;
+  font-weight: 750;
+  padding: 0.42rem 0.25rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.drawer-shortcut-btn:hover {
+  background: var(--brand-gold);
+  color: #ffffff;
+  border-color: var(--brand-gold);
+}
+
 
 
 /* Footer do Drawer (Totais, Opções e Checkout) */
@@ -1650,19 +1705,19 @@ button {
 
 }
 
-/* Botão Prosseguir para Checkout */
+/* Botão Prosseguir para Checkout (com Setas e Indicador) */
 .btn-proceed-checkout {
   width: 100%;
   background: linear-gradient(135deg, var(--brand-gold) 0%, var(--brand-copper) 100%);
   color: #ffffff;
   font-weight: 800;
-  font-size: 1.05rem;
-  padding: 0.95rem 1.35rem;
+  font-size: 0.95rem;
+  padding: 0.95rem 1.15rem;
   border-radius: var(--radius-md);
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 0.65rem;
+  justify-content: space-between;
+  gap: 0.5rem;
   box-shadow: 0 4px 18px rgba(184, 131, 73, 0.4);
   transition: transform var(--transition-fast), box-shadow var(--transition-fast), filter var(--transition-fast);
   cursor: pointer;
@@ -1675,12 +1730,46 @@ button {
   filter: brightness(1.06);
 }
 
-.btn-proceed-checkout svg {
+.btn-proceed-checkout .btn-arrow-icon {
   transition: transform var(--transition-fast);
+  flex-shrink: 0;
 }
 
-.btn-proceed-checkout:hover svg {
-  transform: translateX(4px);
+.btn-proceed-checkout:hover .btn-arrow-icon:last-child {
+  transform: translateX(3px);
+}
+
+.btn-proceed-checkout:hover .btn-arrow-icon:first-child {
+  transform: translateX(-3px);
+}
+
+.btn-proceed-label {
+  flex: 1;
+  text-align: center;
+  line-height: 1.25;
+}
+
+.checkout-btn-dots-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.15);
+  padding: 3px 6px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.checkout-btn-dots-inline .dot-mini {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.45);
+}
+
+.checkout-btn-dots-inline .dot-mini.active {
+  background: #ffffff;
+  width: 12px;
+  border-radius: 999px;
 }
 
 /* Botão Checkout WhatsApp Legado */
@@ -4487,6 +4576,76 @@ button {
   transform: rotate(90deg);
 }
 
+/* Abas Clicáveis de Etapas (Navegação Direta) */
+.checkout-steps-nav {
+  display: flex;
+  background: #ffffff;
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 0.45rem 1.25rem;
+  gap: 0.5rem;
+  overflow-x: auto;
+}
+
+.checkout-nav-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.65rem;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.checkout-nav-tab:hover {
+  background: var(--brand-cream-light);
+}
+
+.checkout-nav-tab.active {
+  background: rgba(184, 131, 73, 0.12);
+  border-color: rgba(184, 131, 73, 0.35);
+}
+
+.checkout-nav-tab .tab-badge {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(60, 42, 26, 0.1);
+  color: var(--brand-roast);
+  font-size: 0.75rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.checkout-nav-tab.active .tab-badge {
+  background: var(--brand-gold);
+  color: #ffffff;
+}
+
+.checkout-nav-tab.completed .tab-badge {
+  background: var(--brand-copper);
+  color: #ffffff;
+}
+
+.checkout-nav-tab .tab-title {
+  font-size: 0.78rem;
+  font-weight: 750;
+  color: var(--brand-text-muted);
+  transition: color var(--transition-fast);
+}
+
+.checkout-nav-tab.active .tab-title {
+  color: var(--brand-roast);
+  font-weight: 800;
+}
+
 /* Barra de Progresso Superior */
 .checkout-progress-bar-wrap {
   width: 100%;
@@ -4553,28 +4712,35 @@ button {
   margin: 0;
 }
 
-/* Shein Style Item List */
+/* Shein Style Item List com Observações por Produto */
 .checkout-shein-list {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.85rem;
   margin-bottom: 1.25rem;
 }
 
 .checkout-shein-item {
   display: flex;
-  align-items: center;
-  gap: 0.85rem;
+  flex-direction: column;
+  gap: 0.65rem;
   background: #ffffff;
   border: 1px solid var(--border-subtle);
   border-radius: 12px;
-  padding: 0.75rem 0.85rem;
+  padding: 0.85rem;
   box-shadow: 0 2px 8px rgba(60, 42, 26, 0.04);
   transition: border-color var(--transition-fast);
 }
 
 .checkout-shein-item:hover {
   border-color: rgba(184, 131, 73, 0.4);
+}
+
+.checkout-shein-main-row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  width: 100%;
 }
 
 .checkout-shein-img {
@@ -4672,6 +4838,44 @@ button {
 
 .checkout-shein-remove:hover {
   color: #c95151;
+}
+
+/* Caixa de Observação Individual do Produto */
+.checkout-product-note-box {
+  background: var(--bg-cream);
+  border-radius: 8px;
+  padding: 0.45rem 0.65rem 0.55rem;
+  border: 1px dashed rgba(184, 131, 73, 0.35);
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.checkout-product-note-label {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.73rem;
+  font-weight: 750;
+  color: var(--brand-copper);
+}
+
+.checkout-product-note-input {
+  width: 100%;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  padding: 0.4rem 0.65rem;
+  font-size: 0.82rem;
+  background: #ffffff;
+  color: var(--brand-roast);
+  font-family: inherit;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.checkout-product-note-input:focus {
+  outline: none;
+  border-color: var(--brand-gold);
+  box-shadow: 0 0 0 2px rgba(184, 131, 73, 0.15);
 }
 
 /* Sections & Form Groups */
@@ -4773,6 +4977,52 @@ button {
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--brand-copper);
+}
+
+/* Cartões de Seção (Cadastro & Endereçamento) */
+.checkout-form-card {
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  padding: 1.15rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 8px rgba(60, 42, 26, 0.04);
+}
+
+.checkout-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 0.95rem;
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid var(--border-subtle);
+  flex-wrap: wrap;
+}
+
+.checkout-card-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(184, 131, 73, 0.12);
+  color: var(--brand-copper);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.checkout-card-title {
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  color: var(--brand-roast);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.checkout-card-desc {
+  font-size: 0.75rem;
+  color: var(--brand-text-light);
+  margin: 0;
 }
 
 .checkout-address-block {
@@ -4909,12 +5159,12 @@ button {
 
 /* Footer Navigation with Dots & Arrows */
 .checkout-modal-footer {
-  padding: 0.95rem 1.5rem;
+  padding: 0.85rem 1.35rem;
   background: #ffffff;
   border-top: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
-  gap: 0.85rem;
+  gap: 0.75rem;
 }
 
 .btn-checkout-prev {
@@ -4922,14 +5172,15 @@ button {
   border: none;
   color: var(--brand-roast);
   font-weight: 700;
-  font-size: 0.9rem;
-  padding: 0.85rem 1.15rem;
+  font-size: 0.88rem;
+  padding: 0.85rem 1rem;
   border-radius: 12px;
   display: flex;
   align-items: center;
-  gap: 0.45rem;
+  gap: 0.4rem;
   cursor: pointer;
   transition: all var(--transition-fast);
+  flex-shrink: 0;
 }
 
 .btn-checkout-prev:hover {
@@ -4941,14 +5192,14 @@ button {
   background: linear-gradient(135deg, var(--brand-gold) 0%, var(--brand-copper) 100%);
   color: #ffffff;
   font-weight: 800;
-  font-size: 1rem;
-  padding: 0.88rem 1.35rem;
+  font-size: 0.95rem;
+  padding: 0.85rem 1.15rem;
   border-radius: 12px;
   border: none;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
+  gap: 0.65rem;
   box-shadow: 0 4px 16px rgba(184, 131, 73, 0.35);
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -4969,6 +5220,29 @@ button {
   box-shadow: 0 6px 24px rgba(37, 211, 102, 0.55);
 }
 
+/* Setas dos Lados do Botão */
+.checkout-btn-side-arrow {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all var(--transition-fast);
+}
+
+.btn-checkout-next:hover .checkout-btn-side-arrow.arrow-right {
+  transform: translateX(2px);
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.btn-checkout-next:hover .checkout-btn-side-arrow.arrow-left {
+  transform: translateX(-2px);
+  background: rgba(0, 0, 0, 0.25);
+}
+
 /* 3 Bolinhas Dentro do Botão */
 .checkout-btn-dots {
   display: flex;
@@ -4977,6 +5251,7 @@ button {
   background: rgba(0, 0, 0, 0.15);
   padding: 4px 8px;
   border-radius: 999px;
+  flex-shrink: 0;
 }
 
 .checkout-dot {
@@ -4984,7 +5259,13 @@ button {
   height: 7px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.45);
+  cursor: pointer;
   transition: all 0.25s ease;
+}
+
+.checkout-dot:hover {
+  background: rgba(255, 255, 255, 0.85);
+  transform: scale(1.2);
 }
 
 .checkout-dot.active {
@@ -4996,14 +5277,8 @@ button {
 .checkout-btn-text {
   flex: 1;
   text-align: center;
-}
-
-.checkout-btn-arrow {
-  transition: transform var(--transition-fast);
-}
-
-.btn-checkout-next:hover .checkout-btn-arrow {
-  transform: translateX(3px);
+  line-height: 1.25;
+  font-size: 0.92rem;
 }
 
 @media (max-width: 600px) {
@@ -5014,11 +5289,30 @@ button {
   .checkout-modal-header,
   .checkout-slide-inner,
   .checkout-modal-footer {
-    padding-left: 1rem;
-    padding-right: 1rem;
+    padding-left: 0.85rem;
+    padding-right: 0.85rem;
+  }
+  .checkout-steps-nav {
+    padding: 0.35rem 0.65rem;
+    gap: 0.35rem;
+  }
+  .checkout-nav-tab {
+    padding: 0.35rem 0.45rem;
+    font-size: 0.72rem;
   }
   .checkout-form-row {
     grid-template-columns: 1fr;
+  }
+  .btn-checkout-next {
+    padding: 0.75rem 0.85rem;
+    font-size: 0.88rem;
+    gap: 0.4rem;
+  }
+  .checkout-btn-text {
+    font-size: 0.84rem;
+  }
+  .btn-checkout-prev {
+    padding: 0.75rem 0.85rem;
   }
 }
 

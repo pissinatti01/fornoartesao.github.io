@@ -415,6 +415,9 @@ function renderCart() {
           </button>
           <div class="cart-item-subtotal">${formatCurrency(item.price * item.quantity)}</div>
         </div>
+        <div class="cart-item-note-row">
+          <input type="text" class="cart-drawer-item-note" placeholder="📝 Obs do produto (ex: sem açúcar, bem assado...)" value="${item.notes || ''}" oninput="cart.setProductNote('${item.id}', this.value)" title="Adicionar observação específica para este produto" />
+        </div>
       </div>
     `).join('');
   }
@@ -507,13 +510,13 @@ function showToast(message) {
 let currentCheckoutStep = 1;
 let currentPaymentMethod = 'pix';
 
-function openCheckoutModal() {
+function openCheckoutModal(targetStep = 1) {
   if (cart.items.length === 0) {
     showToast('Seu carrinho está vazio! Adicione produtos antes de prosseguir.');
     return;
   }
   closeCartDrawer();
-  currentCheckoutStep = 1;
+  currentCheckoutStep = (targetStep >= 1 && targetStep <= 3) ? targetStep : 1;
 
   // Carrega dados salvos do cliente do storage
   loadClientDataFromStorage();
