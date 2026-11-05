@@ -349,3 +349,4 @@ SELECT
   (SELECT IFNULL(SUM(valor), 0) FROM Despesa WHERE statusPagamento = 'Pendente') AS 'Despesas_Pendentes',
   ((SELECT IFNULL(SUM(valorTotal), 0) FROM Pedido WHERE statusPedido != 'Cancelado') - 
    (SELECT IFNULL(SUM(valor), 0) FROM Despesa WHERE statusPagamento = 'Pago')) AS 'Saldo_Operacional';
+

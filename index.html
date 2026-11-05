@@ -209,10 +209,18 @@
         </div>
       </div>
 
-      <!-- Botão Prosseguir para Checkout Multi-etapas -->
-      <button class="btn-proceed-checkout" id="btn-proceed-checkout" onclick="openCheckoutModal()">
-        <span>Prosseguir</span>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <!-- Botão Prosseguir para Checkout Multi-etapas com Setas e Indicador -->
+      <button class="btn-proceed-checkout" id="btn-proceed-checkout" onclick="openCheckoutModal()" title="Prosseguir para conferência, cadastro e endereçamento">
+        <svg class="btn-arrow-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+        <div class="checkout-btn-dots-inline">
+          <span class="dot-mini active"></span>
+          <span class="dot-mini"></span>
+          <span class="dot-mini"></span>
+        </div>
+        <span class="btn-proceed-label">Prosseguir para Cadastro & Endereço</span>
+        <svg class="btn-arrow-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <polyline points="9 18 15 12 9 6"></polyline>
         </svg>
       </button>
@@ -557,6 +565,22 @@
         </button>
       </div>
 
+      <!-- Abas Clicáveis de Navegação entre Etapas (Leva diretamente a cada área) -->
+      <nav class="checkout-steps-nav" aria-label="Navegação do pedido">
+        <button type="button" class="checkout-nav-tab active" id="checkout-tab-1" onclick="goToCheckoutStep(1)" title="Ir para Pedido e Observações dos Produtos">
+          <span class="tab-badge">1</span>
+          <span class="tab-title">Pedido & Obs</span>
+        </button>
+        <button type="button" class="checkout-nav-tab" id="checkout-tab-2" onclick="goToCheckoutStep(2)" title="Ir para Cadastro e Endereçamento">
+          <span class="tab-badge">2</span>
+          <span class="tab-title">Cadastro & Endereço</span>
+        </button>
+        <button type="button" class="checkout-nav-tab" id="checkout-tab-3" onclick="goToCheckoutStep(3)" title="Ir para Forma de Pagamento">
+          <span class="tab-badge">3</span>
+          <span class="tab-title">Pagamento</span>
+        </button>
+      </nav>
+
       <!-- Barra de Progresso Superior -->
       <div class="checkout-progress-bar-wrap">
         <div class="checkout-progress-bar-fill" id="checkout-progress-fill"></div>
@@ -566,12 +590,12 @@
       <div class="checkout-slider-viewport">
         <div class="checkout-slider-track" id="checkout-slider-track">
           
-          <!-- =================== ETAPA 1: VISUALIZAÇÃO E CONFIRMAÇÃO DO PEDIDO (ESTILO SHEIN) =================== -->
+          <!-- =================== ETAPA 1: VISUALIZAÇÃO, ITENS E OBSERVAÇÕES DOS PRODUTOS =================== -->
           <div class="checkout-step-slide" id="checkout-slide-1">
             <div class="checkout-slide-inner">
               <div class="checkout-step-intro">
-                <span class="checkout-shein-tag">📦 Itens Selecionados</span>
-                <p>Revise os produtos e quantidades do seu pedido artesanal:</p>
+                <span class="checkout-shein-tag">📦 Itens Selecionados & Observações</span>
+                <p>Revise suas delícias e adicione observações específicas para cada produto:</p>
               </div>
 
               <!-- Lista Shein-Style de Itens -->
@@ -602,77 +626,128 @@
                 </div>
               </div>
 
-              <!-- Observações Adicionais -->
+              <!-- Observações Gerais do Pedido -->
               <div class="checkout-field-section">
-                <label class="checkout-section-label" for="checkout-notes">Observações / Preferências (opcional):</label>
-                <textarea id="checkout-notes" class="checkout-input" rows="2" placeholder="Ex: Entregar quentinho, embalagem para presente, sem açúcar extra..."></textarea>
+                <label class="checkout-section-label" for="checkout-notes">Observações Gerais do Pedido (opcional):</label>
+                <textarea id="checkout-notes" class="checkout-input" rows="2" placeholder="Ex: Entregar após as 16h, campainha quebrada, embalar para presente..."></textarea>
               </div>
             </div>
           </div>
 
-          <!-- =================== ETAPA 2: ENDEREÇO & DADOS DO CLIENTE =================== -->
+          <!-- =================== ETAPA 2: ÁREA DE CADASTRO & ENDEREÇAMENTO =================== -->
           <div class="checkout-step-slide" id="checkout-slide-2">
             <div class="checkout-slide-inner">
-              <div class="checkout-step-intro">
-                <span class="checkout-shein-tag">📍 Dados para Contato & Entrega</span>
-                <p>Preencha suas informações para prepararmos e enviarmos seu pedido:</p>
-              </div>
-
-              <div class="checkout-form-grid">
-                
-                <div class="checkout-form-group full-width">
-                  <label for="client-name">Nome Completo <span class="required">*</span></label>
-                  <input type="text" id="client-name" class="checkout-input" placeholder="Ex: Maria Clara de Souza" required />
+              
+              <!-- Cartão 1: Área de Cadastro (Identificação do Cliente) -->
+              <div class="checkout-form-card" id="sec-cadastro">
+                <div class="checkout-card-header">
+                  <div class="checkout-card-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 class="checkout-card-title">Área de Cadastro</h3>
+                    <p class="checkout-card-desc">Informe seu nome e WhatsApp para contato e acompanhamento</p>
+                  </div>
                 </div>
 
-                <div class="checkout-form-group full-width">
-                  <label for="client-phone">Número de Telefone / WhatsApp <span class="required">*</span></label>
-                  <input type="tel" id="client-phone" class="checkout-input" placeholder="Ex: (84) 99123-4567" required />
-                </div>
-
-                <!-- Bloco de Endereço -->
-                <div class="checkout-address-block full-width" id="checkout-address-block">
-                  <div class="checkout-address-header">
-                    <strong id="checkout-address-title">Endereço de Entrega</strong>
-                    <span id="cep-status-text" class="cep-status-text"></span>
+                <div class="checkout-form-grid">
+                  <div class="checkout-form-group full-width">
+                    <label for="client-name">Nome Completo <span class="required">*</span></label>
+                    <input type="text" id="client-name" class="checkout-input" placeholder="Ex: Maria Clara de Souza" required oninput="saveClientDataToStorage()" />
                   </div>
 
+                  <div class="checkout-form-group full-width">
+                    <label for="client-phone">Número de Telefone / WhatsApp <span class="required">*</span></label>
+                    <input type="tel" id="client-phone" class="checkout-input" placeholder="(84) 99123-4567" required oninput="handlePhoneInput(this.value)" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Cartão 2: Área de Endereçamento (Para Entrega) -->
+              <div class="checkout-form-card" id="sec-enderecamento">
+                <div class="checkout-card-header">
+                  <div class="checkout-card-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"></path>
+                      <circle cx="12" cy="9" r="2.5"></circle>
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 class="checkout-card-title" id="checkout-address-title">Área de Endereçamento</h3>
+                    <p class="checkout-card-desc" id="checkout-address-desc">Endereço completo para entrega das suas delícias</p>
+                  </div>
+                  <span id="cep-status-text" class="cep-status-text"></span>
+                </div>
+
+                <div class="checkout-form-grid">
+                  <!-- CEP com busca rápida -->
                   <div class="checkout-form-group full-width" id="grp-cep">
                     <label for="client-cep">CEP</label>
                     <div class="cep-input-wrapper">
-                      <input type="text" id="client-cep" class="checkout-input" placeholder="59000-000" maxlength="9" oninput="handleCepInput(this.value)" />
-                      <button type="button" class="btn-cep-search" onclick="searchCepManual()">Buscar</button>
+                      <input type="text" id="client-cep" class="checkout-input" placeholder="59152-600" maxlength="9" oninput="handleCepInput(this.value)" />
+                      <button type="button" class="btn-cep-search" onclick="searchCepManual()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                          <circle cx="11" cy="11" r="8"></circle>
+                          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                        Buscar CEP
+                      </button>
                     </div>
                   </div>
 
+                  <!-- Rua / Avenida -->
                   <div class="checkout-form-group full-width" id="grp-street">
                     <label for="client-street">Rua / Avenida <span class="required" id="street-required">*</span></label>
-                    <input type="text" id="client-street" class="checkout-input" placeholder="Ex: Rua das Flores ou Av. Principal" />
+                    <input type="text" id="client-street" class="checkout-input" placeholder="Ex: Av. Maria Lacerda Montenegro ou Rua das Flores" oninput="saveClientDataToStorage()" />
                   </div>
 
-                  <div class="checkout-form-row" id="grp-row-num-neigh">
+                  <!-- Número e Complemento -->
+                  <div class="checkout-form-row" id="grp-row-num-comp">
                     <div class="checkout-form-group">
                       <label for="client-number">Número <span class="required" id="number-required">*</span></label>
-                      <input type="text" id="client-number" class="checkout-input" placeholder="Ex: 123 ou S/N" />
+                      <input type="text" id="client-number" class="checkout-input" placeholder="Ex: 100 ou S/N" oninput="saveClientDataToStorage()" />
                     </div>
 
                     <div class="checkout-form-group">
-                      <label for="client-neighborhood">Bairro / Logradouro <span class="required" id="neighborhood-required">*</span></label>
-                      <input type="text" id="client-neighborhood" class="checkout-input" placeholder="Ex: Centro" />
+                      <label for="client-complement">Complemento (opcional)</label>
+                      <input type="text" id="client-complement" class="checkout-input" placeholder="Ex: Apto 302, Bloco B" oninput="saveClientDataToStorage()" />
                     </div>
                   </div>
 
-                  <div class="checkout-form-group full-width" id="grp-complement">
-                    <label for="client-complement">Complemento / Ponto de Referência (opcional)</label>
-                    <input type="text" id="client-complement" class="checkout-input" placeholder="Ex: Apto 302, Bloco B, ao lado da praça" />
+                  <!-- Bairro / Logradouro -->
+                  <div class="checkout-form-group full-width" id="grp-neighborhood">
+                    <label for="client-neighborhood">Bairro / Logradouro <span class="required" id="neighborhood-required">*</span></label>
+                    <input type="text" id="client-neighborhood" class="checkout-input" placeholder="Ex: Nova Parnamirim" oninput="saveClientDataToStorage()" />
+                  </div>
+
+                  <!-- Cidade e UF -->
+                  <div class="checkout-form-row" id="grp-row-city-uf">
+                    <div class="checkout-form-group">
+                      <label for="client-city">Cidade <span class="required">*</span></label>
+                      <input type="text" id="client-city" class="checkout-input" value="Parnamirim" placeholder="Ex: Parnamirim ou Natal" oninput="saveClientDataToStorage()" />
+                    </div>
+
+                    <div class="checkout-form-group">
+                      <label for="client-uf">UF <span class="required">*</span></label>
+                      <input type="text" id="client-uf" class="checkout-input" value="RN" maxlength="2" placeholder="RN" oninput="saveClientDataToStorage()" />
+                    </div>
+                  </div>
+
+                  <!-- Ponto de Referência -->
+                  <div class="checkout-form-group full-width" id="grp-reference">
+                    <label for="client-reference">Ponto de Referência (opcional)</label>
+                    <input type="text" id="client-reference" class="checkout-input" placeholder="Ex: Próximo ao supermercado, portão verde" oninput="saveClientDataToStorage()" />
                   </div>
 
                   <div class="checkout-pickup-notice" id="checkout-pickup-notice" style="display: none;">
-                    <span>✨ Como você optou por <strong>Retirar na Padaria</strong>, o endereço para entrega é opcional. Seu pedido estará quentinho te esperando em nosso balcão!</span>
+                    <span>✨ Como você optou por <strong>Retirar na Padaria</strong>, o preenchimento do endereço é opcional. Suas delícias estarão quentinhas te esperando em nosso balcão!</span>
                   </div>
                 </div>
-
               </div>
+
             </div>
           </div>
 
@@ -763,25 +838,39 @@
         </div>
       </div>
 
-      <!-- Rodapé do Checkout com Botão Prosseguir, Setas e 3 Bolinhas de Navegação -->
+      <!-- Rodapé do Checkout com Botão Prosseguir, Setas dos Lados e 3 Bolinhas de Navegação -->
       <div class="checkout-modal-footer">
         <button class="btn-checkout-prev" id="btn-checkout-prev" onclick="checkoutPrevStep()" style="display: none;" title="Voltar etapa anterior">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <polyline points="15 18 9 12 15 6"></polyline>
           </svg>
-          <span>Voltar</span>
+          <span id="btn-checkout-prev-label">Voltar</span>
         </button>
 
         <button class="btn-checkout-next" id="btn-checkout-next" onclick="checkoutNextStep()">
-          <div class="checkout-btn-dots" id="checkout-btn-dots" aria-label="Indicador de etapas">
-            <span class="checkout-dot active" data-step="1"></span>
-            <span class="checkout-dot" data-step="2"></span>
-            <span class="checkout-dot" data-step="3"></span>
+          <!-- Seta Esquerda do lado do botão -->
+          <span class="checkout-btn-side-arrow arrow-left" id="btn-arrow-left" title="Etapa anterior">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+          </span>
+
+          <!-- 3 Bolinhas que sinalizam e navegam as páginas -->
+          <div class="checkout-btn-dots" id="checkout-btn-dots" aria-label="Indicador de páginas">
+            <span class="checkout-dot active" data-step="1" onclick="event.stopPropagation(); goToCheckoutStep(1)" title="Ir para Etapa 1: Pedido & Observações"></span>
+            <span class="checkout-dot" data-step="2" onclick="event.stopPropagation(); goToCheckoutStep(2)" title="Ir para Etapa 2: Cadastro & Endereçamento"></span>
+            <span class="checkout-dot" data-step="3" onclick="event.stopPropagation(); goToCheckoutStep(3)" title="Ir para Etapa 3: Pagamento"></span>
           </div>
-          <span class="checkout-btn-text" id="checkout-next-text">Prosseguir</span>
-          <svg class="checkout-btn-arrow" id="checkout-next-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <polyline points="9 18 15 12 9 6"></polyline>
-          </svg>
+
+          <!-- Texto do Botão que conduz entre as etapas -->
+          <span class="checkout-btn-text" id="checkout-next-text">Prosseguir para Cadastro & Endereço</span>
+
+          <!-- Seta Direita do lado do botão -->
+          <span class="checkout-btn-side-arrow arrow-right" id="checkout-next-arrow" title="Avançar etapa">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </span>
         </button>
       </div>
 
